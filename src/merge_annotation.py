@@ -3,6 +3,7 @@
 Create GTF file from Gencode annotations (.gtf file),
 Gencode tRNAs (.gtf file) and spikeins (.fasta file).
 Inputs are taken in gzipped format.
+Output is given in gzipped format.
 """
 
 __author__ = "Otto Jolanki"
@@ -50,15 +51,31 @@ if __name__ == "__main__":
     # formatting template for converting the spikeins into correct .gtf format
     SPIKEIN_FORMAT = '{spikein_name}\tspikein\texon\t1\t{sequence_length}\t.\t+\t.\tgene_id "gSpikein_{spikein_name}"; transcript_id "tSpikein_{spikein_name}";\n'
     # Annotation filename
-    parser.add_argument("--annotation", action="store", required=True)
+    parser.add_argument(
+        "--annotation",
+        action="store",
+        required=True,
+        help='Gencode annotation .gtf file in gzipped format.')
 
     # tRNA filename
-    parser.add_argument("--tRNA", action="store", required=True)
+    parser.add_argument(
+        "--tRNA",
+        action="store",
+        required=True,
+        help='Gencode tRNA .gtf file in gzipped format.')
 
     # spikeins filename
-    parser.add_argument("--spikeins", action="store", required=True)
+    parser.add_argument(
+        "--spikeins",
+        action="store",
+        required=True,
+        help='Spikein .fasta file in gzipped format.')
 
-    parser.add_argument("--output_filename", action="store", required=True)
+    parser.add_argument(
+        "--output_filename",
+        action="store",
+        required=True,
+        help='Output filename, including .gz ending.')
 
     # Specify output of "--version"
     parser.add_argument(
@@ -86,7 +103,7 @@ if __name__ == "__main__":
                           for line in tRNA_nocomments)
 
     with spikein_file as f:
-        spikein_string = str(f.read())
+        spikein_string = f.read()
 
     spikein_tokens = get_fasta_tokens(spikein_string)
     # split the tokens into sequence of [name, sequence] -pairs
@@ -100,7 +117,7 @@ if __name__ == "__main__":
         spikein_name=token[0], sequence_length=token[1])
                      for token in spikein_name_length_pairs_no_whitespace)
 
-    with open(args.output_filename, "w") as f_out:
+    with gzip.open(args.output_filename, "wt") as f_out:
         for line in annotation_linegenerator:
             f_out.write(line)
         for line in tRNA_linegenerator:
